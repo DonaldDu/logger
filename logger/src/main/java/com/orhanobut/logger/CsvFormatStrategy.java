@@ -94,7 +94,7 @@ public class CsvFormatStrategy implements FormatStrategy {
     SimpleDateFormat dateFormat;
     LogStrategy logStrategy;
     String tag = "PRETTY_LOGGER";
-
+    String folder;
     private Builder() {
     }
 
@@ -118,6 +118,21 @@ public class CsvFormatStrategy implements FormatStrategy {
       return this;
     }
 
+      @NonNull
+      public Builder folder(@NonNull File folder) {
+          this.folder = folder.getAbsolutePath();
+          return this;
+      }
+
+      @NonNull
+      private String getFolder() {
+          if (folder == null) {
+              String diskPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+              folder = diskPath + File.separatorChar + "logger";
+          }
+          return folder;
+      }
+
     @NonNull public CsvFormatStrategy build() {
       if (date == null) {
         date = new Date();
@@ -126,9 +141,7 @@ public class CsvFormatStrategy implements FormatStrategy {
         dateFormat = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss.SSS", Locale.UK);
       }
       if (logStrategy == null) {
-        String diskPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String folder = diskPath + File.separatorChar + "logger";
-
+        String folder = getFolder();
         HandlerThread ht = new HandlerThread("AndroidFileLogger." + folder);
         ht.start();
         Handler handler = new DiskLogStrategy.WriteHandler(ht.getLooper(), folder, MAX_BYTES);
